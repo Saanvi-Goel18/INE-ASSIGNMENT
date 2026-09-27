@@ -1,0 +1,1 @@
+(async()=>{const ids=new Set();let fails=0;for(let p=1;p<=16;p++){const r=await fetch(`https://demo.inelabteamdev.com/api/v2/listings?page=${p}&limit=60`);if(!r.ok){fails++;console.log('page',p,r.status);continue}const j=await r.json();j.results.forEach(x=>ids.add(x.id))}console.log('unique',ids.size,'fails',fails,'min',Math.min(...ids),'max',Math.max(...ids))})()

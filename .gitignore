@@ -1,0 +1,9 @@
+node_modules/
+.env
+*.pdf
+PRICE_TRACKER_PLAN.md
+recon/bundle.js
+recon/*.html
+recon/recon-log.json
+recon/links.json
+CORE_CHECKLIST.md

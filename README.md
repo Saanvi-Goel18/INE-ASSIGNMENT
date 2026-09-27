@@ -139,6 +139,7 @@ cd backend
 npm run scrape -- 2801 "Standard kit" --headed
 npm run scrape -- 2801 "Standard kit" --headed --slowmo=150              # slowed down
 npm run scrape -- 2100 "Pro Bundle" --headed --simulate-layout-change   # blocks the store's layout file to show the fallback + warning
+npm run scrape -- 2801 "Standard kit" --headed --save                 # also saves the result to the dashboard as a "manual" run
 ```
 
 Arguments are the store product ID (as in `/item/<id>`) and the option label exactly as shown on the product page. To watch scheduled runs of the local server in a browser, set `HEADLESS=false`.

@@ -2,15 +2,15 @@
 :root {
   --bg: #faf8f5;          /* soft warm off-white */
   --panel: #ffffff;
-  --panel-soft: #f6f3fb;  /* stat tiles, hover rows */
-  --text: #2a2838;
-  --muted: #6b6880;
-  --border: #ebe7f2;
-  --grid: #f0edf6;
+  --panel-soft: #f3f8f5;  /* stat tiles, hover rows */
+  --text: #26302b;
+  --muted: #66706b;
+  --border: #e5ece8;
+  --grid: #edf3ef;
 
-  --accent: #6b5fd0;      /* lavender: links, chart line (4.9:1 on white) */
-  --accent-soft: #ece8fc;
-  --accent-border: #cdc5f5;
+  --accent: #237a6b;      /* teal-green: links, chart line (5.2:1 on white) */
+  --accent-soft: #daf1ec;
+  --accent-border: #a9dccf;
 
   /* Outcome + warning colours: four distinct hues, pastel background + deep text */
   --ok: #1f7a4f;          --ok-bg: #dcf4e6;      /* mint     — success */
@@ -47,8 +47,8 @@ button, .button, select, input {
 }
 button, .button { cursor: pointer; text-decoration: none; display: inline-block; }
 button:hover, .button:hover { border-color: var(--accent-border); background: var(--accent-soft); }
-button.primary { background: var(--accent-soft); border-color: var(--accent-border); color: #4a3fb0; font-weight: 600; }
-button.primary:hover { background: #e0daf9; }
+button.primary { background: var(--accent-soft); border-color: var(--accent-border); color: #17594e; font-weight: 600; }
+button.primary:hover { background: #c9ebe2; }
 input:focus, select:focus { outline: 2px solid var(--accent-border); outline-offset: 1px; }
 button.ghost { background: transparent; }
 button.link { border: none; background: none; color: var(--accent); padding: 4px 0; }

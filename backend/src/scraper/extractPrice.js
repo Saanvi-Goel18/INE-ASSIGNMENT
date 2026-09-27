@@ -77,6 +77,12 @@ function extractOfferInfo(priceClass) {
   return {
     state: 'ready',
     method,
+    // Which of the elements we rely on were actually present (for change detection).
+    structure: {
+      offerRow: Boolean(panel.querySelector('.offer-row')),
+      stockPill: Boolean(stockEl),
+      priceClassFound: priceClass ? children.some((el) => el.classList.contains(priceClass)) : null,
+    },
     candidateCount: candidates.length,
     priceText: priceEl ? priceEl.textContent : null,
     mrpText: mrpEl ? mrpEl.textContent : null,
@@ -135,4 +141,21 @@ function parseStock(raw, soldOut) {
   return Number(nums[0]);
 }
 
-module.exports = { extractOfferInfo, normalizeText, parsePrice, parseStock };
+/**
+ * Page-structure change detection. Given one ready-panel reading from extractOfferInfo()
+ * and the price class from the store's layout manifest, list what didn't look the way the
+ * scraper expects. An empty list means the primary (manifest-class) path worked cleanly.
+ */
+function layoutWarningsFor(info, priceClass) {
+  if (!info || info.state !== 'ready') return [];
+  const w = [];
+  if (!priceClass) w.push('layout manifest (price class) not received');
+  if (info.structure?.priceClassFound === false) w.push('no element with the manifest price class');
+  if (info.structure && !info.structure.offerRow) w.push('.offer-row missing');
+  if (info.structure && !info.structure.stockPill) w.push('stock pill (.avail-pill) missing');
+  if (info.method === 'structural') w.push('price found by structural fallback');
+  if (!info.method && !info.pending) w.push(`price element not identifiable (${info.candidateCount} candidates)`);
+  return w;
+}
+
+module.exports = { extractOfferInfo, normalizeText, parsePrice, parseStock, layoutWarningsFor };

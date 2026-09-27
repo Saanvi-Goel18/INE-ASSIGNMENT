@@ -1,5 +1,18 @@
 import { formatInr, formatTime } from '../format';
 
+// Rows from before change detection existed (or that never reached the price panel) show "—".
+function LayoutCell({ row }) {
+  if (row.layout_warnings?.length) {
+    return (
+      <span className="badge badge-layout" title={row.layout_warnings.join('\n')}>
+        ⚠ {row.extraction_method === 'structural' ? 'fallback' : 'changed'}
+      </span>
+    );
+  }
+  if (row.extraction_method) return <span className="muted small">ok</span>;
+  return <span className="muted">—</span>;
+}
+
 // Failed rows are shown at full strength on purpose: failures must be visible, not hidden.
 export default function ScrapeLogTable({ rows }) {
   if (!rows.length) return <p className="muted">No scrapes yet.</p>;
@@ -13,6 +26,7 @@ export default function ScrapeLogTable({ rows }) {
             <th className="num">Price</th>
             <th>Stock</th>
             <th className="num">Attempts</th>
+            <th>Layout</th>
             <th>Error</th>
           </tr>
         </thead>
@@ -26,6 +40,9 @@ export default function ScrapeLogTable({ rows }) {
               <td className="num">{r.price == null ? '—' : formatInr(r.price)}</td>
               <td>{r.stock == null ? '—' : r.stock === 0 ? 'Sold out' : `${r.stock} units`}</td>
               <td className="num">{r.attempts}</td>
+              <td>
+                <LayoutCell row={r} />
+              </td>
               <td className="err-cell">{r.error || ''}</td>
             </tr>
           ))}

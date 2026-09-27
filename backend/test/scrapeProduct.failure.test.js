@@ -17,4 +17,6 @@ test('failed scrape returns null price/stock (option that does not exist)', { ti
   assert.strictEqual(r.outcome, 'failed');
   assert.strictEqual(r.price, null);
   assert.strictEqual(r.stock, null);
+  // change detection: a missing option label is reported as a layout change
+  assert.ok(r.layoutWarnings.includes('option picker / option labels changed'), JSON.stringify(r.layoutWarnings));
 });

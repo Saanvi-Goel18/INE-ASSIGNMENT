@@ -1,5 +1,5 @@
 const { chromium } = require('playwright');
-const { extractOfferInfo, parsePrice, parseStock } = require('./extractPrice');
+const { extractOfferInfo, parsePrice, parseStock, layoutWarningsFor } = require('./extractPrice');
 
 const STORE_BASE_URL = process.env.STORE_BASE_URL || 'https://demo.inelabteamdev.com';
 
@@ -32,7 +32,7 @@ function productUrlFor(storeProductId) {
  *
  * Invariant: when outcome === 'failed', price/stock/stockText are always null.
  */
-async function scrapeProduct({ productUrl, optionLabel, headless = true, browser: sharedBrowser, contextOptions = {}, log = () => {}, slowMo }) {
+async function scrapeProduct({ productUrl, optionLabel, headless = true, browser: sharedBrowser, contextOptions = {}, log = () => {}, slowMo, simulateLayoutChange = false }) {
   const events = [];
   const note = (msg) => {
     const line = `${new Date().toISOString()} ${msg}`;
@@ -46,11 +46,21 @@ async function scrapeProduct({ productUrl, optionLabel, headless = true, browser
   let result = null; // {price, stock, stockText}
   let lastError = null;
   let pageAttemptsMax = 1;
+  // Page-structure change detection: how the price was found, and anything we expected but didn't see.
+  let extractionMethod = null;
+  const layoutWarnings = new Set();
 
   try {
     if (!browser) browser = await chromium.launch({ headless, slowMo });
     context = await browser.newContext({ viewport: { width: 1280, height: 800 }, locale: 'en-IN', ...contextOptions });
     const page = await context.newPage();
+
+    // Test hook: block the store's layout manifest, so the scraper has to fall back to
+    // structural extraction — the same situation as the store renaming its price class.
+    if (simulateLayoutChange) {
+      await page.route('**/api/v2/ui/manifest*', (route) => route.abort());
+      note('simulating a layout change: /api/v2/ui/manifest is blocked');
+    }
 
     // Capture the page's own layout manifest so we know the real price class.
     let priceClass = null;
@@ -169,6 +179,7 @@ async function scrapeProduct({ productUrl, optionLabel, headless = true, browser
         // Let React finish painting the ready panel.
         await sleep(300);
         const info = await page.evaluate(extractOfferInfo, priceClass);
+        layoutWarningsFor(info, priceClass).forEach((w) => layoutWarnings.add(w));
 
         if (info.state === 'failed') throw new Error(`store reported: ${info.message}`);
         if (info.pending) throw new Error('price shown with "Refreshing prices" (stale/pending quote) — not trusted');
@@ -184,9 +195,13 @@ async function scrapeProduct({ productUrl, optionLabel, headless = true, browser
         if (info.pageAttempts) pageAttemptsMax = Math.max(pageAttemptsMax, info.pageAttempts);
         note(`attempt ${attempts}: OK price=${price} stock=${stock} ("${info.stockText}") via ${info.method}` + (info.pageAttempts > 1 ? `, page needed ${info.pageAttempts} internal attempts` : ''));
         result = { price, stock, stockText: info.stockText };
+        extractionMethod = info.method;
         break;
       } catch (err) {
         lastError = err.message.split('\n')[0];
+        if (/option ".*" not found|could not select option/.test(lastError)) layoutWarnings.add('option picker / option labels changed');
+        if (/\.offer-panel, \.shelf-alert/.test(err.message)) layoutWarnings.add('offer panel (.offer-panel) not found');
+        if (/check today|check again/i.test(err.message) && /Timeout/.test(lastError)) layoutWarnings.add('check-price button not found');
         note(`attempt ${attempts}: FAILED — ${lastError}`);
         // Navigation / page-level problems: reload from scratch next time.
         // A rejected handshake or a stuck "Refreshing prices" quote tends to repeat on the same page, so start over with a fresh load (new telemetry).
@@ -218,6 +233,8 @@ async function scrapeProduct({ productUrl, optionLabel, headless = true, browser
     outcome,
     attempts: totalAttempts,
     error: outcome === 'failed' ? lastError : null,
+    extractionMethod,
+    layoutWarnings: [...layoutWarnings],
     events,
   };
 }

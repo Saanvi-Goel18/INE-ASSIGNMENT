@@ -27,6 +27,9 @@ export default function ProductCard({ product, refreshKey, onRemoved }) {
   }, [product.id, refreshKey]);
 
   const latest = history[history.length - 1];
+  // Change detection: judge the most recent scrape that got far enough to read the page.
+  const lastLayout = log.find((r) => r.extraction_method || r.layout_warnings?.length);
+  const layoutChanged = Boolean(lastLayout?.layout_warnings?.length);
   const counts = log.reduce((acc, r) => ((acc[r.outcome] = (acc[r.outcome] || 0) + 1), acc), {});
   const prices = history.map((h) => Number(h.price));
 
@@ -56,6 +59,14 @@ export default function ProductCard({ product, refreshKey, onRemoved }) {
           </button>
         </div>
       </header>
+
+      {layoutChanged && (
+        <div className="layout-alert" role="alert">
+          <strong>⚠ Store layout changed</strong> — the last scrape ({formatTime(lastLayout.ts)}) had to use a fallback or found missing
+          elements: {lastLayout.layout_warnings.join('; ')}. Prices are still being read, but the scraper's primary selector should be
+          checked.
+        </div>
+      )}
 
       <div className="stats">
         <Stat label="Latest price" value={latest ? formatInr(latest.price) : '—'} sub={latest ? formatTime(latest.ts) : ''} />

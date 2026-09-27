@@ -1,5 +1,7 @@
 # Product Price Tracker
 
+> 🎬 **Demo video:** [headed scraper run against the mock store, 2 min 55 s (docs/demo-video.mp4)](docs/demo-video.mp4) — search → track a new product → headed scrape with `--save` → the new reading on the dashboard → CSV export.
+
 Tracks the price and stock of chosen products (and a chosen option of each) on the INE mock store on a fixed schedule. Every scrape attempt is recorded as `success`, `retried` or `failed`, and the dashboard shows price history, a per-product scrape log and a CSV export.
 
 | | |

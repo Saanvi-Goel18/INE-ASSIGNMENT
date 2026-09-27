@@ -28,6 +28,11 @@ export default function ProductCard({ product, refreshKey, onRemoved }) {
   }, [product.id, refreshKey]);
 
   const latest = history[history.length - 1];
+  // Price change vs the previous successful reading (failed attempts are not readings).
+  const previous = history[history.length - 2];
+  const change = latest && previous ? Number(latest.price) - Number(previous.price) : 0;
+  const changePct = change && previous ? (change / Number(previous.price)) * 100 : 0;
+  const priceDropped = change < 0;
   // The log is newest-first; if the very last attempt failed, say so next to the last good price.
   const lastAttemptFailed = log[0]?.outcome === 'failed' ? log[0] : null;
   // Change detection: judge the most recent scrape that got far enough to read the page.
@@ -59,7 +64,10 @@ export default function ProductCard({ product, refreshKey, onRemoved }) {
           {!open && (
             <span className="card-summary">
               <span className="summary-price">
-                <strong>{latest ? formatInr(latest.price) : '—'}</strong>
+                <span className="summary-price-line">
+                  {priceDropped && <span className="drop-flag" title="Price dropped since the last reading">▼ {Math.abs(changePct).toFixed(1)}%</span>}
+                  <strong>{latest ? formatInr(latest.price) : '—'}</strong>
+                </span>
                 {(lastAttemptFailed || layoutChanged) && (
                   <span className="summary-flags">
                     {lastAttemptFailed && <span className="flag flag-failed" title={`Last attempt failed at ${formatTime(lastAttemptFailed.ts)}`}>last attempt failed</span>}
@@ -106,6 +114,12 @@ export default function ProductCard({ product, refreshKey, onRemoved }) {
           sub={
             <>
               {latest ? formatTime(latest.ts) : ''}
+              {change !== 0 && (
+                <span className={priceDropped ? 'price-drop' : 'price-rise'}>
+                  {priceDropped ? '▼' : '▲'} {formatInr(Math.abs(change))} ({changePct > 0 ? '+' : '−'}
+                  {Math.abs(changePct).toFixed(1)}%) since last reading
+                </span>
+              )}
               {lastAttemptFailed && <span className="last-failed">Last attempt failed at {formatTime(lastAttemptFailed.ts)}</span>}
             </>
           }

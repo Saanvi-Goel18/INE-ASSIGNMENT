@@ -11,7 +11,7 @@ let lastRun = null; // summary of the last finished run
  * Scrape every tracked product once and append one scrape_log row per product —
  * including failures, which are logged with price/stock NULL.
  */
-async function runAll({ log = console.log, simulateLayoutChangeFor = null } = {}) {
+async function runAll({ log = console.log, simulateLayoutChangeFor = null, triggeredBy = 'manual' } = {}) {
   const startedAt = new Date().toISOString();
   const { data: products, error } = await supabase.from('tracked_products').select('*').order('added_at');
   if (error) throw new Error(`load tracked_products: ${error.message}`);
@@ -39,11 +39,12 @@ async function runAll({ log = console.log, simulateLayoutChangeFor = null } = {}
         error: r.error,
         extraction_method: r.extractionMethod,
         layout_warnings: r.layoutWarnings.length ? r.layoutWarnings : null,
+        triggered_by: triggeredBy,
       };
       let { error: insertErr } = await supabase.from('scrape_log').insert(row);
-      if (insertErr && /extraction_method|layout_warnings/.test(insertErr.message)) {
-        // Change-detection columns not migrated yet: never lose the scrape itself over them.
-        const { extraction_method, layout_warnings, ...basic } = row;
+      if (insertErr && /extraction_method|layout_warnings|triggered_by/.test(insertErr.message)) {
+        // Optional columns not migrated yet: never lose the scrape itself over them.
+        const { extraction_method, layout_warnings, triggered_by, ...basic } = row;
         ({ error: insertErr } = await supabase.from('scrape_log').insert(basic));
       }
       if (insertErr) log(`insert failed for ${product.id}: ${insertErr.message}`);

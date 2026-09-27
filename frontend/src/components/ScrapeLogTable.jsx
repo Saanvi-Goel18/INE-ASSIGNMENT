@@ -33,7 +33,14 @@ export default function ScrapeLogTable({ rows }) {
         <tbody>
           {rows.map((r) => (
             <tr key={r.id} className={`row-${r.outcome}`}>
-              <td>{formatTime(r.ts)}</td>
+              <td>
+                {formatTime(r.ts)}
+                {r.triggered_by === 'manual' && (
+                  <span className="trigger-tag" title="Run triggered by hand, not by the schedule">
+                    manual
+                  </span>
+                )}
+              </td>
               <td>
                 <span className={`badge badge-${r.outcome}`}>{r.outcome}</span>
               </td>

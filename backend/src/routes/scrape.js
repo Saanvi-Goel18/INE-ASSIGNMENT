@@ -6,8 +6,12 @@ const { startRun, isRunning, getLastRun } = require('../scraper/runAll');
 // immediately and scrape in the background. ?wait=1 blocks until done (manual testing).
 // ?simulate_layout_change=<tracked product id> blocks the store's layout manifest for that
 // one product, to demonstrate change detection on the live site.
+// ?trigger=schedule is sent by the cron job; anything else is recorded as a manual run.
 router.post('/run', async (req, res) => {
-  const { started, promise } = startRun({ simulateLayoutChangeFor: req.query.simulate_layout_change || null });
+  const { started, promise } = startRun({
+    simulateLayoutChangeFor: req.query.simulate_layout_change || null,
+    triggeredBy: req.query.trigger === 'schedule' ? 'schedule' : 'manual',
+  });
   if (req.query.wait) return res.json({ started, ...(await promise) });
   res.status(started ? 202 : 409).json({ started, message: started ? 'scrape run started' : 'a run is already in progress' });
 });

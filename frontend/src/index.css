@@ -151,3 +151,11 @@ tr.row-failed td:first-child { box-shadow: inset 3px 0 0 var(--bad); }
   .summary-price { align-items: flex-start; }
   .card-actions { margin-left: 36px; }
 }
+
+/* Price change vs previous reading: teal for a drop (good news), neutral for a rise —
+   outcome colours stay reserved for scrape outcomes. */
+.price-drop { color: var(--accent-strong); font-weight: 600; }
+.price-rise { color: var(--muted); }
+.summary-price-line { display: flex; align-items: center; gap: 8px; }
+.drop-flag { font-size: 0.72rem; font-weight: 700; color: var(--accent-strong); background: var(--accent-soft); border: 1px solid var(--accent-border); border-radius: 999px; padding: 1px 7px; }
+.trigger-tag { margin-left: 8px; font-size: 0.7rem; font-weight: 600; color: var(--muted); border: 1px dashed var(--border); border-radius: 999px; padding: 0 7px; }

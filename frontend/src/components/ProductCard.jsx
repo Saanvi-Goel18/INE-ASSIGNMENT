@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { api } from '../api';
-import { formatInr, formatTime } from '../format';
+import { formatInr, formatTime, formatShortTime } from '../format';
 import PriceChart from './PriceChart';
 import ScrapeLogTable from './ScrapeLogTable';
 import ExportButton from './ExportButton';
@@ -35,6 +35,8 @@ export default function ProductCard({ product, refreshKey, onRemoved }) {
   const priceDropped = change < 0;
   // The log is newest-first; if the very last attempt failed, say so next to the last good price.
   const lastAttemptFailed = log[0]?.outcome === 'failed' ? log[0] : null;
+  const lastAttempt = log[0];
+  const stockLabel = !latest || latest.stock == null ? '—' : Number(latest.stock) === 0 ? 'Sold out' : `${latest.stock} in stock`;
   // Change detection: judge the most recent scrape that got far enough to read the page.
   const lastLayout = log.find((r) => r.extraction_method || r.layout_warnings?.length);
   const layoutChanged = Boolean(lastLayout?.layout_warnings?.length);
@@ -48,9 +50,13 @@ export default function ProductCard({ product, refreshKey, onRemoved }) {
   };
 
   return (
-    <article className={`panel card ${open ? 'card-open' : 'card-closed'}`}>
+    <article className={`panel card ${open ? 'card-open' : 'card-closed'}`} onClick={open ? undefined : () => setOpen(true)}>
       <header className="card-head">
-        <button type="button" className="card-toggle" aria-expanded={open} onClick={() => setOpen((o) => !o)}>
+        <button type="button" className="card-toggle" aria-expanded={open} onClick={(e) => {
+            e.stopPropagation();
+            setOpen((o) => !o);
+          }}
+        >
           <span className="chevron" aria-hidden="true">
             ›
           </span>
@@ -63,6 +69,21 @@ export default function ProductCard({ product, refreshKey, onRemoved }) {
           </span>
           {!open && (
             <span className="card-summary">
+              <span className="summary-status">
+                <span>
+                  <span className="summary-label">Stock</span> {stockLabel}
+                </span>
+                <span>
+                  <span className="summary-label">Last scrape</span>{' '}
+                  {lastAttempt ? (
+                    <>
+                      <span className={`badge badge-sm badge-${lastAttempt.outcome}`}>{lastAttempt.outcome}</span> {formatShortTime(lastAttempt.ts)}
+                    </>
+                  ) : (
+                    '—'
+                  )}
+                </span>
+              </span>
               <span className="summary-price">
                 <span className="summary-price-line">
                   {priceDropped && <span className="drop-flag" title="Price dropped since the last reading">▼ {Math.abs(changePct).toFixed(1)}%</span>}
@@ -76,14 +97,14 @@ export default function ProductCard({ product, refreshKey, onRemoved }) {
                 )}
               </span>
               <span className="pill-row">
-                <span className="badge badge-success">{counts.success || 0}</span>
-                <span className="badge badge-retried">{counts.retried || 0}</span>
-                <span className="badge badge-failed">{counts.failed || 0}</span>
+                <span className="badge badge-success" title="Successful scrapes">{counts.success || 0}</span>
+                <span className="badge badge-retried" title="Scrapes that needed retries">{counts.retried || 0}</span>
+                <span className="badge badge-failed" title="Failed scrapes">{counts.failed || 0}</span>
               </span>
             </span>
           )}
         </button>
-        <div className="card-actions">
+        <div className="card-actions" onClick={(e) => e.stopPropagation()}>
           <ExportButton productId={product.id} label="↓ CSV" />
           <button type="button" className="ghost" onClick={remove}>
             Remove

@@ -159,3 +159,29 @@ tr.row-failed td:first-child { box-shadow: inset 3px 0 0 var(--bad); }
 .summary-price-line { display: flex; align-items: center; gap: 8px; }
 .drop-flag { font-size: 0.72rem; font-weight: 700; color: var(--accent-strong); background: var(--accent-soft); border: 1px solid var(--accent-border); border-radius: 999px; padding: 1px 7px; }
 .trigger-tag { margin-left: 8px; font-size: 0.7rem; font-weight: 600; color: var(--muted); border: 1px dashed var(--border); border-radius: 999px; padding: 0 7px; }
+
+/* Outcome legend above the product list */
+.legend { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin: 4px 2px 12px; }
+.legend-title { font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-right: 4px; }
+
+/* Collapsed row: stock + last scrape at a glance, and the whole row is clearly clickable */
+.card-closed { cursor: pointer; transition: background-color 0.12s ease, border-color 0.12s ease; }
+.card-closed:hover { background: var(--panel-soft); border-color: var(--accent-border); }
+.card-closed:hover .chevron { color: var(--accent); border-color: var(--accent-border); background: var(--accent-soft); }
+.card-closed .card-actions { cursor: default; }
+.summary-status { display: flex; flex-direction: column; gap: 4px; font-size: 0.8rem; color: var(--text); min-width: 190px; }
+.summary-label { font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); display: inline-block; min-width: 78px; }
+.badge-sm { padding: 0 7px; font-size: 0.7rem; line-height: 1.6; }
+@media (max-width: 640px) {
+  .summary-status { min-width: 0; width: 100%; }
+  .card-summary { flex-wrap: wrap; row-gap: 8px; }
+}
+
+/* Align the summary columns across rows */
+@media (min-width: 641px) {
+  .card-toggle .card-title { flex: 1 1 auto; }
+  .card-summary { margin-left: 0; flex: none; }
+  .summary-status { width: 220px; }
+  .summary-price { width: 118px; }
+  .card-summary .pill-row { width: 96px; justify-content: flex-end; }
+}

@@ -44,6 +44,16 @@ export default function App() {
       {products === null && !error && <p className="muted">Loading… (the free backend can take ~1 min to wake up)</p>}
       {products?.length === 0 && <p className="muted">Nothing tracked yet. Search for a product above.</p>}
 
+      {products?.length > 0 && (
+        <div className="legend" aria-label="Scrape outcome colours">
+          <span className="legend-title">Scrape outcomes</span>
+          <span className="badge badge-success">success</span>
+          <span className="badge badge-retried">retried</span>
+          <span className="badge badge-failed">failed</span>
+          <span className="muted small">· counts per product · click a product for its chart and full log</span>
+        </div>
+      )}
+
       <div className="cards">
         {products?.map((p) => (
           <ProductCard key={p.id} product={p} refreshKey={refreshKey} onRemoved={load} />

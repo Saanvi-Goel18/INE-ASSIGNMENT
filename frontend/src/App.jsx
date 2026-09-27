@@ -33,7 +33,7 @@ export default function App() {
       <header className="top">
         <div>
           <h1>Price Tracker</h1>
-          <p className="muted">Prices are scraped every 15 minutes. Failed scrapes are kept and shown.</p>
+          <p className="muted">Prices are scraped every 2 hours. Failed scrapes are kept and shown.</p>
         </div>
         <ExportButton label="Export all (CSV)" />
       </header>

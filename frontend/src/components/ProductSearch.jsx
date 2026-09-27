@@ -108,7 +108,7 @@ export default function ProductSearch({ onAdded }) {
               Back
             </button>
           </div>
-          <p className="muted small">The first price appears after the next scheduled scrape (every 15 min).</p>
+          <p className="muted small">The first price appears after the next scheduled scrape (every 2 hours).</p>
         </div>
       )}
       {error && <p className="error">{error}</p>}

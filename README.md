@@ -9,6 +9,6 @@ Tracks price and stock of products on the demo store on a schedule, records ever
 |---|---|---|
 | `backend/` | Node + Express, Playwright (Chromium), Supabase (Postgres) | Render (Docker, Playwright image) |
 | `frontend/` | React + Vite + Recharts | Vercel |
-| Scheduler | cron-job.org → `POST /api/scrape/run` with `x-cron-secret` | every 15 min |
+| Scheduler | cron-job.org → `POST /api/scrape/run` with `x-cron-secret` | every 2 hours |
 
 Full README and design note coming soon.

@@ -206,13 +206,17 @@ async function scrapeProduct({ productUrl, optionLabel, headless = true, browser
   let outcome = 'failed';
   if (result) outcome = attempts === 1 && pageAttemptsMax === 1 ? 'success' : 'retried';
 
+  // Total tries = our clicks plus any extra tries the store page made internally on the
+  // successful click, so a 'retried' row always shows attempts > 1.
+  const totalAttempts = attempts + (result ? pageAttemptsMax - 1 : 0);
+
   return {
     timestamp: new Date().toISOString(),
     price: outcome === 'failed' ? null : result.price,
     stock: outcome === 'failed' ? null : result.stock,
     stockText: outcome === 'failed' ? null : result.stockText,
     outcome,
-    attempts,
+    attempts: totalAttempts,
     error: outcome === 'failed' ? lastError : null,
     events,
   };

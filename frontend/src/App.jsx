@@ -50,7 +50,7 @@ export default function App() {
           <span className="badge badge-success">success</span>
           <span className="badge badge-retried">retried</span>
           <span className="badge badge-failed">failed</span>
-          <span className="muted small">· counts per product · click a product for its chart and full log</span>
+          <span className="muted small">· status of each product's last scrape · click a product for its chart and full log</span>
         </div>
       )}
 

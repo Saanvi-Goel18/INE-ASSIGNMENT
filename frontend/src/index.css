@@ -199,3 +199,10 @@ tr.row-failed td:first-child { box-shadow: inset 3px 0 0 var(--bad); }
 @media (min-width: 641px) {
   .card-summary .pill-row { width: 226px; justify-content: flex-end; }
 }
+
+/* Collapsed row without count pills: status column a little wider, time stays on one line */
+@media (min-width: 641px) {
+  .summary-status { width: 250px; }
+  .card-summary { gap: 24px; }
+}
+.summary-status > span { white-space: nowrap; }

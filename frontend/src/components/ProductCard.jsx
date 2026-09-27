@@ -77,9 +77,8 @@ export default function ProductCard({ product, refreshKey, onRemoved }) {
                   <span className="summary-label">Last scrape</span>{' '}
                   {lastAttempt ? (
                     <>
-                      <span className={`last-time lt-${lastAttempt.outcome}`} title={`Last attempt: ${lastAttempt.outcome}`}>
-                        {formatShortTime(lastAttempt.ts)}
-                      </span>
+                      <span className={`badge badge-sm badge-${lastAttempt.outcome}`}>{lastAttempt.outcome}</span>{' '}
+                      <span className="last-time">{formatShortTime(lastAttempt.ts)}</span>
                     </>
                   ) : (
                     '—'
@@ -97,11 +96,6 @@ export default function ProductCard({ product, refreshKey, onRemoved }) {
                     {layoutChanged && <span className="flag flag-layout" title="Store layout changed">layout changed</span>}
                   </span>
                 )}
-              </span>
-              <span className="pill-row">
-                <span className="badge badge-success">{counts.success || 0} success</span>
-                <span className="badge badge-retried">{counts.retried || 0} retried</span>
-                <span className="badge badge-failed">{counts.failed || 0} failed</span>
               </span>
             </span>
           )}

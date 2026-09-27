@@ -207,11 +207,11 @@ tr.row-failed td:first-child { box-shadow: inset 3px 0 0 var(--bad); }
 }
 .summary-status > span { white-space: nowrap; }
 
-/* Price change since the last reading, highlighted both ways: green = dropped, red = rose */
-.change-pill { display: inline-flex; align-items: center; gap: 3px; width: fit-content; padding: 1px 8px; border-radius: 999px; font-size: 0.74rem; font-weight: 700; white-space: nowrap; }
-.change-down { color: #17693f; background: #d3f2df; border: 1px solid #9fdcb8; }
-.change-up { color: #a3222f; background: #fde0e4; border: 1px solid #f4b3bd; }
-.change-note { font-size: 0.72rem; margin-top: 2px; white-space: normal; }
+/* Price change since the last reading, market convention: green = rose, red = dropped */
+.change-pill { display: inline-flex; align-items: center; gap: 3px; width: fit-content; font-size: 0.78rem; font-weight: 600; white-space: nowrap; }
+.change-up { color: #1f7a4f; }
+.change-down { color: #b3263e; }
+.change-note { font-size: 0.8rem; white-space: normal; }
 @media (min-width: 641px) {
   .summary-price { width: 196px; }
   .summary-price-line { justify-content: flex-end; }

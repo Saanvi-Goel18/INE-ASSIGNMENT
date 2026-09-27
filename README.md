@@ -31,19 +31,22 @@ There is **no always-on loop**: the backend only scrapes when the scheduler call
 - **Product selection** – search the store's catalogue by partial name, brand or category, pick a product and one of its options, and start tracking it. The store has no search API, so the backend keeps its own copy of the catalogue (cached in Supabase Storage so search works immediately after a restart).
 - **Scheduled scraping** – each run opens the product page in Chromium, handles the cookie modal, selects the option, satisfies the store's mouse-movement check, requests today's price and reads the real price and stock (ignoring the page's hidden and decoy prices).
 - **Retries and honest outcomes** – up to 5 attempts per product. Result is `success` (first try), `retried` (needed more than one try, including the store page's own internal retries) or `failed` (price and stock left empty, error message stored). Failures are always saved and shown.
-- **Price history & scrape log** – chart of price over time plus a table of every attempt with time, outcome, price, stock, attempts and error.
-- **CSV export** – one row per scrape attempt: `store_product_id,product_name,selected_option,timestamp,price,stock,outcome` (timestamps ISO 8601 UTC; failed rows have empty price and stock).
+- **Price history & scrape log** – chart of price over time plus a table of every attempt with time, outcome, price, stock, attempts, layout status and error. Rows from runs triggered by hand are tagged "manual".
+- **Dashboard** – a compact list of tracked products; each row shows current stock, the last scrape's outcome and time, and the latest price. Clicking a row opens its latest / lowest / highest price, outcome counts, chart and full log. If the most recent attempt failed, the last good price stays visible with a "last attempt failed at …" note.
+- **CSV export** – one row per scrape attempt: `store_product_id,product_name,selected_option,timestamp,price,stock,outcome` (timestamps ISO 8601 UTC; failed rows have empty price and stock). "Export all" and each product's "↓ CSV" save files named with the download date and time, e.g. `scrape_history_2026-09-27_22-08.csv` / `scrape_history_2801_2026-09-27_22-08.csv`.
 - **Page-structure change detection** *(bonus)* – each scrape records whether the price was found by the primary method or a fallback, and which expected page elements were missing; the dashboard shows a "Store layout changed" warning.
+- **Price-change indicator** *(bonus, in-app alert)* – each product shows how its price moved since the previous successful reading: a green ▲ pill for a rise and a red ▼ pill for a drop, with the amount and percentage.
+- **Scheduled vs manual runs** – every scrape records whether it was started by the schedule or by hand (`triggered_by`), so the history shows exactly which readings came from unattended runs.
 - **CI** *(bonus)* – GitHub Actions runs the backend tests and the frontend build on every push.
 
 ## Scraping schedule
 
 | Job (cron-job.org) | Schedule | Purpose |
 |---|---|---|
-| `POST /api/scrape/run` with header `x-cron-secret` | **every 2 hours** at :00 UTC | scrapes every tracked product once |
+| `POST /api/scrape/run?trigger=schedule` with header `x-cron-secret` | **every 2 hours** at :00 UTC | scrapes every tracked product once; rows are recorded as `schedule` |
 | `GET /health` | every 10 minutes | keeps the free Render instance awake so the scrape call never hits a sleeping server |
 
-Before submission the scrape ran **every 15 minutes** for several hours, purely to build up enough real history to show; it was then switched to the 2-hour production schedule. The scrape endpoint rejects calls without the correct secret (`401`), and a call made while a run is already in progress returns `409`.
+Before submission the scrape ran **every 15 minutes** for several hours, purely to build up enough real history to show; it was then switched to the 2-hour production schedule. The scrape endpoint rejects calls without the correct secret (`401`), and a call made while a run is already in progress returns `409`. There is deliberately no "run now" button on the public dashboard, because it would need the secret in browser code; manual runs are made with the API call shown under **Try it** and are recorded as `manual`.
 
 ## Environment variables
 
@@ -96,7 +99,8 @@ create table scrape_log (
   attempts int not null default 1,
   error text,                 -- reason, when failed
   extraction_method text,     -- change detection: 'manifest-class' (primary) or 'structural' (fallback)
-  layout_warnings text[]      -- change detection: what looked different on the page
+  layout_warnings text[],     -- change detection: what looked different on the page
+  triggered_by text check (triggered_by in ('schedule', 'manual'))  -- who started the run
 );
 
 create index on scrape_log (tracked_product_id, ts desc);
@@ -152,14 +156,14 @@ Arguments are the store product ID (as in `/item/<id>`) and the option label exa
 | `GET /api/products/:id/history` | successful price readings, for the chart |
 | `GET /api/products/:id/log` | every scrape attempt, newest first |
 | `GET /api/export[?product=:id]` | CSV of all scrape attempts (or one product's) |
-| `POST /api/scrape/run` | run a scrape of all tracked products — needs `x-cron-secret`; `?wait=1` waits for the result |
+| `POST /api/scrape/run` | run a scrape of all tracked products — needs `x-cron-secret`; `?trigger=schedule` marks the rows as scheduled (otherwise `manual`); `?wait=1` waits for the result |
 | `GET /api/scrape/status` | whether a run is in progress and the last run's summary — needs `x-cron-secret` |
 
 ## Deployment
 
 - **Backend → Render:** web service from this repo, root directory `backend`, runtime **Docker** (`backend/Dockerfile` uses `mcr.microsoft.com/playwright`, which already contains Chromium and its system libraries), health check path `/health`. Set the backend environment variables above. See also [`render.yaml`](render.yaml).
 - **Frontend → Vercel:** project root `frontend`, framework Vite, environment variable `VITE_API_URL` = the Render URL.
-- **Scheduler → cron-job.org:** the two jobs in the schedule table above; the scrape job uses method `POST` and header `x-cron-secret: <CRON_SECRET>`.
+- **Scheduler → cron-job.org:** the two jobs in the schedule table above; the scrape job calls `…/api/scrape/run?trigger=schedule` with method `POST` and header `x-cron-secret: <CRON_SECRET>`.
 
 Render and Vercel both redeploy automatically on every push to `main`.
 

@@ -11,4 +11,4 @@ Tracks price and stock of products on the demo store on a schedule, records ever
 | `frontend/` | React + Vite + Recharts | Vercel |
 | Scheduler | cron-job.org → `POST /api/scrape/run` with `x-cron-secret` | every 15 min |
 
-Full README and design note coming soon. The running engineering log is in [`PROGRESS.md`](PROGRESS.md).
+Full README and design note coming soon.

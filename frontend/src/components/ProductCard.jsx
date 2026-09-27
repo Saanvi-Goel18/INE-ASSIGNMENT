@@ -77,7 +77,9 @@ export default function ProductCard({ product, refreshKey, onRemoved }) {
                   <span className="summary-label">Last scrape</span>{' '}
                   {lastAttempt ? (
                     <>
-                      <span className={`badge badge-sm badge-${lastAttempt.outcome}`}>{lastAttempt.outcome}</span> {formatShortTime(lastAttempt.ts)}
+                      <span className={`last-time lt-${lastAttempt.outcome}`} title={`Last attempt: ${lastAttempt.outcome}`}>
+                        {formatShortTime(lastAttempt.ts)}
+                      </span>
                     </>
                   ) : (
                     '—'
@@ -97,15 +99,15 @@ export default function ProductCard({ product, refreshKey, onRemoved }) {
                 )}
               </span>
               <span className="pill-row">
-                <span className="badge badge-success" title="Successful scrapes">{counts.success || 0}</span>
-                <span className="badge badge-retried" title="Scrapes that needed retries">{counts.retried || 0}</span>
-                <span className="badge badge-failed" title="Failed scrapes">{counts.failed || 0}</span>
+                <span className="badge badge-success">{counts.success || 0} success</span>
+                <span className="badge badge-retried">{counts.retried || 0} retried</span>
+                <span className="badge badge-failed">{counts.failed || 0} failed</span>
               </span>
             </span>
           )}
         </button>
         <div className="card-actions" onClick={(e) => e.stopPropagation()}>
-          <ExportButton productId={product.id} label="↓ CSV" />
+          <ExportButton productId={product.id} fileTag={product.store_product_id} label="↓ CSV" />
           <button type="button" className="ghost" onClick={remove}>
             Remove
           </button>

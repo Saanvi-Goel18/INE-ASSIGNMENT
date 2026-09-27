@@ -33,7 +33,7 @@
 
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); }
-main { max-width: 1000px; margin: 0 auto; padding: 32px 16px 64px; }
+main { max-width: 1120px; margin: 0 auto; padding: 32px 16px 64px; }
 h1 { margin: 0 0 4px; font-size: 1.6rem; letter-spacing: -0.01em; }
 h1::before { content: ''; display: inline-block; width: 10px; height: 10px; border-radius: 3px; background: var(--accent); margin-right: 10px; vertical-align: 0.2em; }
 h2 { margin: 0 0 12px; font-size: 1rem; }
@@ -184,4 +184,18 @@ tr.row-failed td:first-child { box-shadow: inset 3px 0 0 var(--bad); }
   .summary-status { width: 220px; }
   .summary-price { width: 118px; }
   .card-summary .pill-row { width: 96px; justify-content: flex-end; }
+}
+
+/* Last-scrape time: one line, tinted by that attempt's outcome */
+.last-time { white-space: nowrap; font-weight: 600; }
+.lt-success { color: var(--ok); }
+.lt-retried { color: var(--retry); }
+.lt-failed { color: var(--bad); }
+.card-summary .pill-row .badge { white-space: nowrap; }
+@media (min-width: 641px) {
+  .summary-status { width: 200px; }
+  .card-summary .pill-row { width: auto; flex-wrap: nowrap; }
+}
+@media (min-width: 641px) {
+  .card-summary .pill-row { width: 226px; justify-content: flex-end; }
 }

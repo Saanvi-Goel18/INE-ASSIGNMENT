@@ -11,10 +11,9 @@ export default function ProductSearch({ onAdded }) {
   const [adding, setAdding] = useState(false);
 
   useEffect(() => {
-    if (query.trim().length < 2) {
-      setResults([]);
-      return;
-    }
+    // Clear right away so results from the previous query never show under the new one.
+    setResults([]);
+    if (query.trim().length < 2) return;
     let live = true;
     setSearching(true);
     const t = setTimeout(() => {

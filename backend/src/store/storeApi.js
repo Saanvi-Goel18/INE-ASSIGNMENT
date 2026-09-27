@@ -6,6 +6,8 @@ const CATALOG_TTL_MS = 6 * 60 * 60 * 1000;
 const MAX_SWEEPS = 12;
 const PAGE_DELAY_MS = 300; // gentle pacing: the store rate limits (429) bursts of requests
 
+const { readCatalogCache, writeCatalogCache } = require('./catalogCache');
+
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 async function getJson(path, tries = 4) {
@@ -66,15 +68,46 @@ async function loadCatalog() {
   return { items, loadedAt: complete ? Date.now() : Date.now() - CATALOG_TTL_MS + 5 * 60 * 1000, complete, expected };
 }
 
-async function getCatalog() {
-  if (catalog && Date.now() - catalog.loadedAt < CATALOG_TTL_MS) return catalog;
+let cacheChecked = false;
+
+/** Sweep the store and, when the result is complete, persist it for the next cold start. */
+function refreshCatalog() {
   if (!loading) {
     loading = loadCatalog()
-      .then((c) => (catalog = c))
+      .then(async (c) => {
+        catalog = { ...c, source: 'sweep' };
+        if (c.complete) await writeCatalogCache(c).catch((e) => console.log(`catalog cache write failed: ${e.message}`));
+        return catalog;
+      })
       .finally(() => (loading = null));
   }
   return loading;
 }
+
+/**
+ * Stale-while-revalidate: on a cold start, serve the persisted catalog at once. If it is
+ * older than the TTL it is still served, and a background sweep replaces it.
+ */
+async function getCatalog() {
+  if (!catalog && !cacheChecked) {
+    cacheChecked = true;
+    const cached = await readCatalogCache().catch((e) => {
+      console.log(`catalog cache read failed: ${e.message}`);
+      return null;
+    });
+    if (cached) {
+      catalog = { items: cached.items, loadedAt: cached.savedAt, expected: cached.expected, complete: cached.items.size >= cached.expected, source: 'cache' };
+    }
+  }
+  if (catalog) {
+    if (Date.now() - catalog.loadedAt >= CATALOG_TTL_MS) refreshCatalog().catch((e) => console.log(`catalog refresh failed: ${e.message}`));
+    return catalog;
+  }
+  return refreshCatalog();
+}
+
+const catalogStatus = () =>
+  catalog ? { source: catalog.source, items: catalog.items.size, ageMin: Math.round((Date.now() - catalog.loadedAt) / 60000), refreshing: Boolean(loading) } : { source: null, refreshing: Boolean(loading) };
 
 async function searchCatalog(query, limit = 20) {
   const c = await getCatalog();
@@ -101,4 +134,4 @@ async function getItem(id) {
   };
 }
 
-module.exports = { searchCatalog, getItem, getCatalog };
+module.exports = { searchCatalog, getItem, getCatalog, catalogStatus };

@@ -87,7 +87,11 @@ export default function ProductCard({ product, refreshKey, onRemoved }) {
               </span>
               <span className="summary-price">
                 <span className="summary-price-line">
-                  {priceDropped && <span className="drop-flag" title="Price dropped since the last reading">▼ {Math.abs(changePct).toFixed(1)}%</span>}
+                  {change !== 0 && (
+                    <span className={`change-pill ${priceDropped ? 'change-down' : 'change-up'}`} title={`Price ${priceDropped ? 'dropped' : 'rose'} since the last reading`}>
+                      {priceDropped ? '▼' : '▲'} {Math.abs(changePct).toFixed(1)}%
+                    </span>
+                  )}
                   <strong>{latest ? formatInr(latest.price) : '—'}</strong>
                 </span>
                 {(lastAttemptFailed || layoutChanged) && (
@@ -132,7 +136,7 @@ export default function ProductCard({ product, refreshKey, onRemoved }) {
             <>
               {latest ? formatTime(latest.ts) : ''}
               {change !== 0 && (
-                <span className={priceDropped ? 'price-drop' : 'price-rise'}>
+                <span className={`change-pill change-note ${priceDropped ? 'change-down' : 'change-up'}`}>
                   {priceDropped ? '▼' : '▲'} {formatInr(Math.abs(change))} ({changePct > 0 ? '+' : '−'}
                   {Math.abs(changePct).toFixed(1)}%) since last reading
                 </span>
